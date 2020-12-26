@@ -143,11 +143,9 @@ class LinkTest(unittest.TestCase):
         self.driver.close()
  
 if __name__ == "__main__":
-<<<<<<< Updated upstream
-    unittest.main()
-=======
+                      
     try:
         unittest.main()
     except AssertionError as msg: 
         print(msg)
->>>>>>> Stashed changes
+
