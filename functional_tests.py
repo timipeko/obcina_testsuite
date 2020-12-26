@@ -76,7 +76,7 @@ class LinkTest(unittest.TestCase):
         driver = self.driver
  
         driver.get(url)
-        if "ERROR" in driver.page_source: # An url failed 
+        if "Napaka" in driver.page_source: # An url failed 
             print(f"FAILED {url}: Error {driver.find_element(By.ID, 'errorCode').text} thrown on line {driver.find_element(By.ID, 'errorLine').text} of file {driver.find_element(By.ID, 'errorFile').text}")
             self.any_failed = True # Since an url failed, the generic test case will not be successful 
  
