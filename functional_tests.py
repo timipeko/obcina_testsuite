@@ -1,5 +1,6 @@
 import unittest
 import os
+import sys
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import StaleElementReferenceException, NoSuchElementException
@@ -13,11 +14,11 @@ class LinkTest(unittest.TestCase):
             # Ensure existance of urls.txt
             if not os.path.exists("urls.txt"):
                 print(f'Please provide an "urls.txt" file in working directory, containing the URLs to all tested pages.')
-                self.fail()
+                sys.exit(-1)
  
             # Read all urls 
             urls_in = open('urls.txt', 'r')            
-            self.pages_urls = urls_in.readlines()
+            self.pages_urls = urls_in.read().split('\n')
             urls_in.close()
  
             # Setup seen urls queue 
@@ -38,8 +39,11 @@ class LinkTest(unittest.TestCase):
  
             self.base_url = ""
  
+            self.err_counter = 0 
+ 
         except:
             print("Error in initialisation!")
+            sys.exit(-1)
     
     
     def remove_duplicates(self, urls):        
@@ -78,10 +82,11 @@ class LinkTest(unittest.TestCase):
         driver.get(url)
         if "Napaka" in driver.page_source: # An url failed 
             print(f"FAILED {url}: Error {driver.find_element(By.ID, 'errorCode').text} thrown on line {driver.find_element(By.ID, 'errorLine').text} of file {driver.find_element(By.ID, 'errorFile').text}")
+            self.err_counter += 1 
             self.any_failed = True # Since an url failed, the generic test case will not be successful 
  
         else: 
-            print(f"OK {url}")              
+            #print(f"OK {url}")
             link_elts = driver.find_elements_by_css_selector(".content-wrap a")
             urls = [link_el.get_attribute("href") for link_el in link_elts] # Find all links on page
  
@@ -102,18 +107,35 @@ class LinkTest(unittest.TestCase):
  
     def test_link_crawler(self):                
         # Get all webpage urls that will be crawled and tested 
-        for page_url in self.pages_urls:             
+        for page_url in self.pages_urls:   
+ 
+            self.err_counter = 0 # Reset error counter for this navbar link page        
+ 
             # For each web page, process all links from navbar
+            print(f'Processing {page_url}....',end='')
             self.seen_links.append(page_url)
             self.driver.get(page_url)
-            nav_links_xpath =  '//*[@id="wrapper"]/header//a[@href]'
-            nav_links_elts = self.driver.find_elements_by_xpath(nav_links_xpath)
-            nav_links_urls = [nav_link_elt.get_attribute("href") for nav_link_elt in nav_links_elts]
-            for nav_links_url in nav_links_urls:                
-                if not nav_links_url in self.seen_links:
-                    self.base_url = nav_links_url
-                    self.process_url(nav_links_url)
-                    self.seen_links.append(nav_links_url)
+ 
+            if "Napaka" in self.driver.page_source: # An url failed 
+                print(f"FAILED {page_url}: Error {self.driver.find_element(By.ID, 'errorCode').text} thrown on line {self.driver.find_element(By.ID, 'errorLine').text} of file {self.driver.find_element(By.ID, 'errorFile').text}")
+                self.any_failed = True # Since an url failed, the crawler test case will not be successful 
+                self.err_counter+=1
+            else:
+                nav_links_xpath =  '//*[@id="wrapper"]/header//a[@href]'
+                nav_links_elts = self.driver.find_elements_by_xpath(nav_links_xpath)
+                nav_links_urls = [nav_link_elt.get_attribute("href") for nav_link_elt in nav_links_elts]
+                for nav_links_url in nav_links_urls:                
+                    if not nav_links_url in self.seen_links:
+                        self.base_url = nav_links_url
+                        self.process_url(nav_links_url)
+                        self.seen_links.append(nav_links_url)
+            
+            if self.err_counter == 0: 
+                print('OK!')
+            else: 
+                print(f'Failed with {self.err_counter} errors')
+                    
+            
  
         assert not self.any_failed, "URLs with errors exist!"
  
@@ -121,4 +143,11 @@ class LinkTest(unittest.TestCase):
         self.driver.close()
  
 if __name__ == "__main__":
+<<<<<<< Updated upstream
     unittest.main()
+=======
+    try:
+        unittest.main()
+    except AssertionError as msg: 
+        print(msg)
+>>>>>>> Stashed changes
