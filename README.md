@@ -5,4 +5,4 @@ Web crawler for municipality blog website. Checks website navbar for broken link
 Running instructions:
 1. Provide a url.txt file. Ask author for example urls. 
 2. Install dependencies with `pipenv install`.
-3. Run with `python functional_tests.py
+3. Run with `python functional_tests.py'.
